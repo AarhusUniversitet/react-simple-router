@@ -124,7 +124,7 @@ export function Route({ path, children }: RouteProps): ReactElement | null {
 }
 
 // Link Component
-export function Link({ to, children, className, style }: LinkProps): ReactElement {
+export function Link({ to, children, className, style, ...restProps }: LinkProps & Record<string, any>): ReactElement {
   const { navigate } = useRouter();
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
@@ -133,7 +133,7 @@ export function Link({ to, children, className, style }: LinkProps): ReactElemen
   };
   
   return (
-    <a href={to} onClick={handleClick} className={className} style={style}>
+    <a href={to} onClick={handleClick} className={className} style={style} {...restProps}>
       {children}
     </a>
   );
