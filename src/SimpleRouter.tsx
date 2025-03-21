@@ -1,26 +1,55 @@
 // SimpleRouter.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode, ReactElement } from 'react';
+import React, { 
+  createContext, 
+  useContext, 
+  useState, 
+  useEffect, 
+  useMemo, 
+  useCallback, 
+  ReactNode, 
+  ReactElement, 
+  use 
+} from 'react';
 
-// Interfaces
+// ==============================
+// Types and Interfaces
+// ==============================
+
 export interface RouterContextType {
   currentPath: string;
   navigate: (to: string) => void;
+  isActive: (path: string, exact?: boolean) => boolean;
 }
 
 export interface RouterProviderProps {
   children: ReactNode;
+  initialPath?: string;
 }
 
 export interface RouteProps {
   path: string;
+  exact?: boolean;
   children: ReactNode | ((params: Record<string, string>) => ReactNode);
+}
+
+export interface RouteGroupProps {
+  prefix: string;
+  children: ReactNode;
 }
 
 export interface LinkProps {
   to: string;
   children: ReactNode;
+  activeClassName?: string;
+  exact?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  activeStyle?: React.CSSProperties;
+}
+
+export interface NavLinkProps extends LinkProps {
+  activeClassName: string;
+  exact?: boolean;
 }
 
 export interface SwitchProps {
@@ -31,13 +60,122 @@ export interface NotFoundProps {
   children: ReactNode;
 }
 
-// Skab Router Context
-const RouterContext = createContext<RouterContextType | undefined>(undefined);
+export interface OutletContextType {
+  params: Record<string, string>;
+}
 
-// Router Provider Component
-export function RouterProvider({ children }: RouterProviderProps): ReactElement {
+// ==============================
+// Context Creation
+// ==============================
+
+// Router Context med default værdier
+const RouterContext = createContext<RouterContextType>({
+  currentPath: '/',
+  navigate: () => console.warn('RouterProvider ikke fundet'),
+  isActive: () => false
+});
+
+// Navngiv context for bedre debugging
+RouterContext.displayName = 'RouterContext';
+
+// Outlet Context til nested routes
+const OutletContext = createContext<OutletContextType>({
+  params: {}
+});
+
+// Type guard funktion til at tjekke om et element er en Route
+function isRouteElement(element: any): element is React.ReactElement<RouteProps> {
+  return (
+    React.isValidElement(element) && 
+    typeof (element.props as any).path === 'string'
+  );
+}
+
+// ==============================
+// Utility Functions
+// ==============================
+
+/**
+ * Matcher en sti mod en route pattern og bestemmer om den matcher
+ */
+function matchPath(
+  pattern: string, 
+  path: string, 
+  exact: boolean = false
+): { match: boolean; params: Record<string, string> } {
+  // Start med tomme parametre
+  const params: Record<string, string> = {};
+  
+  // Håndter catch-all routes
+  if (pattern === '*') {
+    return { match: true, params };
+  }
+  
+  // Håndter root path specialtilfælde
+  if (pattern === '/' && path === '/') {
+    return { match: true, params };
+  }
+  
+  // Split patterns og faktiske stier
+  const patternSegments = pattern.split('/').filter(Boolean);
+  const pathSegments = path.split('/').filter(Boolean);
+  
+  // Hvis exact er true, og længderne ikke matcher, så er der ingen match
+  if (exact && patternSegments.length !== pathSegments.length) {
+    return { match: false, params };
+  }
+  
+  // Hvis ikke exact, så skal path være mindst lige så lang som pattern
+  if (!exact && pathSegments.length < patternSegments.length) {
+    return { match: false, params };
+  }
+  
+  // Tjek hver segment
+  for (let i = 0; i < patternSegments.length; i++) {
+    const patternSeg = patternSegments[i];
+    const pathSeg = pathSegments[i];
+    
+    // Hvis dette er en parameter, gem værdien
+    if (patternSeg.startsWith(':')) {
+      const paramName = patternSeg.substring(1);
+      params[paramName] = pathSeg;
+    } 
+    // Ellers skal segmenterne matche præcist
+    else if (patternSeg !== pathSeg) {
+      return { match: false, params };
+    }
+  }
+  
+  return { match: true, params };
+}
+
+// ==============================
+// Components
+// ==============================
+
+/**
+ * RouterProvider - Hovedkomponent der giver routing funktionalitet
+ */
+export function RouterProvider({ 
+  children, 
+  initialPath 
+}: RouterProviderProps): ReactElement {
   // Initialiser state med den nuværende sti
-  const [currentPath, setCurrentPath] = useState<string>(window.location.pathname);
+  const [currentPath, setCurrentPath] = useState<string>(
+    initialPath || window.location.pathname
+  );
+
+  // Funktion til at navigere til en ny sti
+  const navigate = useCallback((to: string): void => {
+    window.history.pushState({}, '', to);
+    setCurrentPath(to);
+  }, []);
+  
+  // Funktion til at tjekke om en sti er aktiv
+  const isActive = useCallback((path: string, exact: boolean = false): boolean => {
+    const { match } = matchPath(path, currentPath, exact);
+    return match;
+  }, [currentPath]);
 
   // Lyt efter ændringer i browser historik
   useEffect(() => {
@@ -45,87 +183,118 @@ export function RouterProvider({ children }: RouterProviderProps): ReactElement 
       setCurrentPath(window.location.pathname);
     };
 
-    // Lyt efter popstate event (når brugeren navigerer frem/tilbage)
     window.addEventListener('popstate', handleLocationChange);
-
-    // Oprydning
+    
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
     };
   }, []);
 
-  // Funktion til at navigere til en ny sti
-  const navigate = (to: string): void => {
-    window.history.pushState({}, '', to);
-    setCurrentPath(to);
-  };
+  // Memoiser context værdi for at forbedre performance
+  const contextValue = useMemo(() => ({
+    currentPath,
+    navigate,
+    isActive
+  }), [currentPath, navigate, isActive]);
 
   return (
-    <RouterContext.Provider value={{ currentPath, navigate }}>
+    <RouterContext.Provider value={contextValue}>
       {children}
     </RouterContext.Provider>
   );
 }
 
-// Custom hook til at bruge router
+/**
+ * useRouter - Hook til at få adgang til routing funktioner
+ */
 export function useRouter(): RouterContextType {
-  const context = useContext(RouterContext);
-  if (!context) {
-    throw new Error('useRouter skal bruges inden for en RouterProvider');
-  }
-  return context;
+  return useContext(RouterContext);
 }
 
-// Route Component
-export function Route({ path, children }: RouteProps): ReactElement | null {
-  const { currentPath } = useRouter();
+/**
+ * Route - Renderer indhold kun når stien matcher
+ */
+export function Route({ 
+  path, 
+  exact = false,
+  children 
+}: RouteProps): ReactElement | null {
+  // Brug use() hook i stedet for useContext for fleksibilitet
+  const { currentPath } = use(RouterContext);
   
-  // Simpel path matching (kan udvides med mere avanceret pattern matching)
-  const isMatch = (): boolean => {
-    // Eksakt match
-    if (path === currentPath) return true;
-    
-    // Enkel parameter matching (f.eks. /users/:id)
-    const pathSegments = path.split('/');
-    const currentSegments = currentPath.split('/');
-    
-    if (pathSegments.length !== currentSegments.length) return false;
-    
-    for (let i = 0; i < pathSegments.length; i++) {
-      if (pathSegments[i].startsWith(':')) continue; // Parameter, så spring over
-      if (pathSegments[i] !== currentSegments[i]) return false;
-    }
-    
-    return true;
-  };
-
-  // Parse parametre fra URL
-  const getParams = (): Record<string, string> => {
-    const params: Record<string, string> = {};
-    const pathSegments = path.split('/');
-    const currentSegments = currentPath.split('/');
-    
-    for (let i = 0; i < pathSegments.length; i++) {
-      if (pathSegments[i].startsWith(':')) {
-        const paramName = pathSegments[i].substring(1);
-        params[paramName] = currentSegments[i];
-      }
-    }
-    
-    return params;
-  };
-
-  // Render børn hvis stien matcher, ellers null
-  return isMatch() ? (
-    typeof children === 'function' ? 
-      children(getParams()) as ReactElement : 
-      children as ReactElement
-  ) : null;
+  // Match stien
+  const { match, params } = matchPath(path, currentPath, exact);
+  
+  if (!match) return null;
+  
+  // Opdater outlet context med den nuværende routes parametre
+  const outletContextValue = useMemo(() => ({
+    params
+  }), [params]);
+  
+  // Renderer børn if stien matcher
+  return (
+    <OutletContext.Provider value={outletContextValue}>
+      {typeof children === 'function' 
+        ? children(params) as ReactElement 
+        : children as ReactElement}
+    </OutletContext.Provider>
+  );
 }
 
-// Link Component
-export function Link({ to, children, className, style }: LinkProps): ReactElement {
-  const { navigate } = useRouter();
+/**
+ * RouteGroup - Bruges til at gruppere ruter under et fælles præfiks
+ */
+export function RouteGroup({
+  prefix,
+  children
+}: RouteGroupProps): ReactElement {
+  return (
+    <>
+      {React.Children.map(children, child => {
+        if (!React.isValidElement(child) || !isRouteElement(child)) {
+          return child;
+        }
+        
+        // Kombiner prefix med rute path
+        const prefixedPath = `${prefix.endsWith('/') ? prefix.slice(0, -1) : prefix}${
+          child.props.path.startsWith('/') ? child.props.path : `/${child.props.path}`
+        }`;
+        
+        return React.cloneElement(child, {
+          ...child.props,
+          path: prefixedPath
+        });
+      })}
+    </>
+  );
+}
+
+/**
+ * Link - Navigationselement
+ */
+export function Link({ 
+  to, 
+  children, 
+  className,
+  style,
+  activeClassName,
+  activeStyle,
+  exact = false
+}: LinkProps): ReactElement {
+  // Brug use() hook i stedet for useContext
+  const { navigate, isActive } = use(RouterContext);
+  
+  const isLinkActive = isActive(to, exact);
+  
+  // Beregn CSS klasser baseret på active state
+  const linkClassName = `${className || ''} ${isLinkActive && activeClassName ? activeClassName : ''}`.trim();
+  
+  // Beregn CSS styles baseret på active state
+  const linkStyle = {
+    ...style,
+    ...(isLinkActive && activeStyle ? activeStyle : {})
+  };
   
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>): void => {
     e.preventDefault();
@@ -133,13 +302,27 @@ export function Link({ to, children, className, style }: LinkProps): ReactElemen
   };
   
   return (
-    <a href={to} onClick={handleClick} className={className} style={style}>
+    <a 
+      href={to} 
+      onClick={handleClick} 
+      className={linkClassName || undefined}
+      style={Object.keys(linkStyle).length > 0 ? linkStyle : undefined}
+    >
       {children}
     </a>
   );
 }
 
-// Switch Component der kun renderer første matchende Route
+/**
+ * NavLink - En specialiseret Link der automatisk tilføjer activeClassName
+ */
+export function NavLink(props: NavLinkProps): ReactElement {
+  return <Link {...props} />;
+}
+
+/**
+ * Switch - Renderer kun første matchende Route
+ */
 export function Switch({ children }: SwitchProps): ReactElement | null {
   const { currentPath } = useRouter();
   
@@ -185,16 +368,42 @@ export function Switch({ children }: SwitchProps): ReactElement | null {
   return (matchingChild as React.ReactElement) || null;
 }
 
-// NotFound Component til at vise når ingen ruter matcher
+/**
+ * NotFound - Vises kun når ingen andre ruter matcher
+ */
 export function NotFound({ children }: NotFoundProps): ReactElement | null {
-  const { currentPath } = useRouter();
-  const allRoutes: string[] = []; // Dette kunne udvides til at registrere alle ruter
+  const { currentPath } = use(RouterContext);
   
-  // Tjek om nuværende sti er i allRoutes
-  const isPathRegistered = allRoutes.some(route => {
-    // Her skulle vi implementere samme matchings-logik som i Route
-    return route === currentPath;
+  // Denne skal have en metode til at registrere alle tilgængelige routes
+  // Dette er bare en simpel placeholder
+  const allRoutes: string[] = []; 
+  
+  const hasMatch = allRoutes.some(route => {
+    const { match } = matchPath(route, currentPath);
+    return match;
   });
   
-  return !isPathRegistered ? (children as ReactElement) : null;
+  return !hasMatch ? (children as ReactElement) : null;
+}
+
+/**
+ * Outlet - Bruges til nested routing, svarer til <Outlet /> i React Router v6
+ */
+export function Outlet(): ReactElement | null {
+  const { params } = useContext(OutletContext);
+  
+  if (!params) {
+    console.warn('Outlet bruges uden for en Route');
+    return null;
+  }
+  
+  return null; // Dette skulle være komponenten fra nested routes
+}
+
+/**
+ * useParams - Giver adgang til route parametre
+ */
+export function useParams(): Record<string, string> {
+  const { params } = useContext(OutletContext);
+  return params;
 }
