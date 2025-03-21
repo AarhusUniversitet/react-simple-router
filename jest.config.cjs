@@ -16,7 +16,16 @@ module.exports = {
   ],
   moduleNameMapper: {
     // Håndterer import af CSS og andre filer (hvis nødvendigt)
-    '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
-    '\\.(gif|ttf|eot|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    // '\\.(css|less|scss|sass)$': '<rootDir>/__mocks__/styleMock.js',
+    // '\\.(gif|ttf|eot|svg)$': '<rootDir>/__mocks__/fileMock.js',
+    // Vigtigt når type:module bruges i package.json
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  // Nødvendigt for ES Modules support
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  globals: {
+    'ts-jest': {
+      useESM: true,
+    },
   },
 };

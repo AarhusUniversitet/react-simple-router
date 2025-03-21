@@ -71,7 +71,7 @@ describe('SimpleRouter', () => {
           <CurrentPath />
         </RouterProvider>
       );
-      
+
       expect(screen.getByTestId('current-path')).toHaveTextContent('/');
     });
 
@@ -81,7 +81,7 @@ describe('SimpleRouter', () => {
           <div>Test</div>
         </RouterProvider>
       );
-      
+
       expect(mockAddEventListener).toHaveBeenCalledWith('popstate', expect.any(Function));
     });
 
@@ -91,21 +91,29 @@ describe('SimpleRouter', () => {
           <div>Test</div>
         </RouterProvider>
       );
-      
+
       unmount();
       expect(mockRemoveEventListener).toHaveBeenCalledWith('popstate', expect.any(Function));
     });
 
+    // Test for useRouter uden for RouterProvider
     test('useRouter kaster fejl når den bruges uden for RouterProvider', () => {
-      // Omdirigerer console.error for at undgå støj i testoutput
-      const originalError = console.error;
-      console.error = jest.fn();
+      // 1. Mock renderingen manuelt
+      const TestComponent = () => {
+        try {
+          useRouter();
+          return <div>Dette bør aldrig renderes</div>;
+        } catch (error) {
+          return <div data-testid="error-caught">{(error as any).message}</div>;
+        }
+      };
       
-      expect(() => {
-        render(<CurrentPath />);
-      }).toThrow('useRouter skal bruges inden for en RouterProvider');
+      // 2. Render en komponent der forsøger at bruge useRouter og fanger fejlen
+      render(<TestComponent />);
       
-      console.error = originalError;
+      // 3. Verificer at fejlen blev fanget og indeholder den forventede besked
+      const errorElement = screen.getByTestId('error-caught');
+      expect(errorElement.textContent).toContain('useRouter skal bruges inden for en RouterProvider');
     });
 
     test('navigate funktionen opdaterer currentPath og kalder history.pushState', () => {
@@ -115,9 +123,9 @@ describe('SimpleRouter', () => {
           <TestNavigator to="/about" />
         </RouterProvider>
       );
-      
+
       fireEvent.click(screen.getByTestId('navigator'));
-      
+
       expect(mockHistoryPush).toHaveBeenCalledWith({}, '', '/about');
       // Vi kan ikke tjekke at currentPath er opdateret da vi har mockat window.location
     });
@@ -130,7 +138,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/' },
         writable: true
       });
-      
+
       render(
         <RouterProvider>
           <Route path="/">
@@ -138,7 +146,7 @@ describe('SimpleRouter', () => {
           </Route>
         </RouterProvider>
       );
-      
+
       expect(screen.getByTestId('home-page')).toBeInTheDocument();
     });
 
@@ -148,7 +156,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/' },
         writable: true
       });
-      
+
       render(
         <RouterProvider>
           <Route path="/about">
@@ -156,7 +164,7 @@ describe('SimpleRouter', () => {
           </Route>
         </RouterProvider>
       );
-      
+
       expect(screen.queryByTestId('about-page')).not.toBeInTheDocument();
     });
 
@@ -166,7 +174,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/user/123' },
         writable: true
       });
-      
+
       render(
         <RouterProvider>
           <Route path="/user/:id">
@@ -174,7 +182,7 @@ describe('SimpleRouter', () => {
           </Route>
         </RouterProvider>
       );
-      
+
       expect(screen.getByTestId('user-page')).toHaveTextContent('User 123');
     });
   });
@@ -186,7 +194,7 @@ describe('SimpleRouter', () => {
           <Link to="/about">About</Link>
         </RouterProvider>
       );
-      
+
       const link = screen.getByText('About');
       expect(link.tagName).toBe('A');
       expect(link).toHaveAttribute('href', '/about');
@@ -199,10 +207,10 @@ describe('SimpleRouter', () => {
           <Link to="/about">About</Link>
         </RouterProvider>
       );
-      
+
       const link = screen.getByText('About');
       fireEvent.click(link);
-      
+
       expect(mockHistoryPush).toHaveBeenCalledWith({}, '', '/about');
     });
   });
@@ -214,7 +222,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/' },
         writable: true
       });
-      
+
       render(
         <RouterProvider>
           <Switch>
@@ -227,7 +235,7 @@ describe('SimpleRouter', () => {
           </Switch>
         </RouterProvider>
       );
-      
+
       expect(screen.getByTestId('home-page')).toBeInTheDocument();
       expect(screen.queryByTestId('about-page')).not.toBeInTheDocument();
     });
@@ -238,7 +246,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/unknown' },
         writable: true
       });
-      
+
       render(
         <RouterProvider>
           <Switch>
@@ -251,7 +259,7 @@ describe('SimpleRouter', () => {
           </Switch>
         </RouterProvider>
       );
-      
+
       expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
       expect(screen.queryByTestId('about-page')).not.toBeInTheDocument();
     });
@@ -264,7 +272,7 @@ describe('SimpleRouter', () => {
         value: { pathname: '/' },
         writable: true
       });
-      
+
       // Skaber en mock popstate event handler til at simulere browser navigation
       let popstateHandler: Function | null = null;
       mockAddEventListener.mockImplementation((event, handler) => {
@@ -272,7 +280,7 @@ describe('SimpleRouter', () => {
           popstateHandler = handler;
         }
       });
-      
+
       const { rerender } = render(
         <RouterProvider>
           <div>
@@ -295,19 +303,19 @@ describe('SimpleRouter', () => {
           </div>
         </RouterProvider>
       );
-      
+
       // Verificer at vi starter på forsiden
       expect(screen.getByTestId('home-page')).toBeInTheDocument();
-      
+
       // Klik på about link
       fireEvent.click(screen.getByTestId('about-link'));
-      
+
       // Simuler at window.location er opdateret
       Object.defineProperty(window, 'location', {
         value: { pathname: '/about' },
         writable: true
       });
-      
+
       // Re-render med opdateret location
       rerender(
         <RouterProvider>
@@ -331,20 +339,20 @@ describe('SimpleRouter', () => {
           </div>
         </RouterProvider>
       );
-      
+
       // Verificer at about siden vises
       expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
       expect(screen.getByTestId('about-page')).toBeInTheDocument();
-      
+
       // Klik på user link
       fireEvent.click(screen.getByTestId('user-link'));
-      
+
       // Simuler at window.location er opdateret
       Object.defineProperty(window, 'location', {
         value: { pathname: '/user/123' },
         writable: true
       });
-      
+
       // Re-render med opdateret location
       rerender(
         <RouterProvider>
@@ -368,12 +376,12 @@ describe('SimpleRouter', () => {
           </div>
         </RouterProvider>
       );
-      
+
       // Verificer at user siden vises med korrekt id
       expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
       expect(screen.queryByTestId('about-page')).not.toBeInTheDocument();
       expect(screen.getByTestId('user-page')).toHaveTextContent('User 123');
-      
+
       // Simuler browser tilbage-knap
       if (popstateHandler) {
         // Simuler at window.location er opdateret
@@ -381,14 +389,14 @@ describe('SimpleRouter', () => {
           value: { pathname: '/about' },
           writable: true
         });
-        
+
         // Kald popstate handler
         act(() => {
           if (popstateHandler) {
             popstateHandler();
           }
         });
-        
+
         // Re-render med opdateret location
         rerender(
           <RouterProvider>
@@ -412,7 +420,7 @@ describe('SimpleRouter', () => {
             </div>
           </RouterProvider>
         );
-        
+
         // Verificer at about siden vises igen
         expect(screen.queryByTestId('home-page')).not.toBeInTheDocument();
         expect(screen.getByTestId('about-page')).toBeInTheDocument();
