@@ -143,13 +143,28 @@ export function Link({ to, children, className, style }: LinkProps): ReactElemen
 export function Switch({ children }: SwitchProps): ReactElement | null {
   const { currentPath } = useRouter();
   
+  // Hjælpefunktion til at type-checke om et element er en Route-komponent
+  const isRouteElement = (element: React.ReactNode): element is React.ReactElement<RouteProps> => {
+    return (
+      React.isValidElement(element) && 
+      // Tjek at props indeholder en 'path' egenskab som en string
+      typeof (element.props as any).path === 'string'
+    );
+  };
+  
   // Find første matchende route
   const matchingChild = React.Children.toArray(children).find((child) => {
-    if (!React.isValidElement(child)) return false;
+    // Brug custom type guard funktion
+    if (!isRouteElement(child)) return false;
     
-    const path = child.props.path as string;
+    // Nu kan vi sikkert tilgå path egenskaben
+    const path = child.props.path;
+    
     // Eksakt match
     if (path === currentPath) return true;
+    
+    // Håndter "catch-all" route
+    if (path === "*") return true;
     
     // Simpel parameter matching
     const pathSegments = path.split('/');
@@ -165,7 +180,9 @@ export function Switch({ children }: SwitchProps): ReactElement | null {
     return true;
   });
   
-  return (matchingChild as ReactElement) || null;
+  // Vi bruger as React.ReactElement fordi TypeScript stadig ikke kan udlede typen korrekt
+  // efter vores custom type guard
+  return (matchingChild as React.ReactElement) || null;
 }
 
 // NotFound Component til at vise når ingen ruter matcher
