@@ -280,8 +280,9 @@ export function Link({
   style,
   activeClassName,
   activeStyle,
-  exact = false
-}: LinkProps): ReactElement {
+  exact = false,
+  ...restProps
+}: LinkProps & Record<string, any>): ReactElement {
   // Brug use() hook i stedet for useContext
   const { navigate, isActive } = use(RouterContext);
   
@@ -307,6 +308,7 @@ export function Link({
       onClick={handleClick} 
       className={linkClassName || undefined}
       style={Object.keys(linkStyle).length > 0 ? linkStyle : undefined}
+      {...restProps}
     >
       {children}
     </a>
