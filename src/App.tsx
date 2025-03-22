@@ -1,11 +1,10 @@
 import React from 'react';
-import { 
-  RouterProvider, 
-  Route, 
-  Link, 
-  NavLink, 
-  Switch, 
-  RouteGroup,
+import {
+  RouterProvider,
+  Route,
+  Link,
+  NavLink,
+  Switch,
   useParams
 } from './SimpleRouter';
 
@@ -25,7 +24,7 @@ const HomePage = () => {
       <h1>Velkommen til SimpleRouter</h1>
       <p>Dette er en demo af vores egen simple router implementering for React 19.</p>
       <p>Prøv at navigere rundt ved hjælp af menuerne ovenfor.</p>
-      
+
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f0f0f0', borderRadius: '8px' }}>
         <h2>Features i denne router:</h2>
         <ul>
@@ -45,10 +44,10 @@ const AboutPage = () => {
     <div>
       <h1>Om SimpleRouter</h1>
       <p>SimpleRouter er et letvægtigt routing-bibliotek til React, der giver dig de mest nødvendige routing-funktioner uden afhængighed af eksterne biblioteker.</p>
-      
+
       <h2>Hvorfor SimpleRouter?</h2>
       <p>React Router og andre routing-biblioteker er fantastiske, men nogle gange har du brug for noget enklere og mere gennemsigtigt. SimpleRouter giver dig:</p>
-      
+
       <ul>
         <li>Mindre bundlestørrelse</li>
         <li>Gennemskuelig kodebase (læs og forstå hele routeren)</li>
@@ -62,8 +61,8 @@ const AboutPage = () => {
 // Produktkomponenter
 const ProductCard = ({ product, showDetails = false }: { product: Product, showDetails?: boolean }) => {
   return (
-    <div style={{ 
-      border: '1px solid #ddd', 
+    <div style={{
+      border: '1px solid #ddd',
       borderRadius: '8px',
       padding: '1rem',
       marginBottom: '1rem',
@@ -73,9 +72,9 @@ const ProductCard = ({ product, showDetails = false }: { product: Product, showD
       <h3>{product.name} {product.featured && '⭐'}</h3>
       <p>{product.description}</p>
       <p><strong>Pris: {product.price} kr.</strong></p>
-      
+
       {!showDetails && (
-        <Link 
+        <Link
           to={`/products/${product.id}`}
           style={{
             display: 'inline-block',
@@ -89,9 +88,9 @@ const ProductCard = ({ product, showDetails = false }: { product: Product, showD
           Se detaljer
         </Link>
       )}
-      
+
       {showDetails && (
-        <Link 
+        <Link
           to="/products"
           style={{
             display: 'inline-block',
@@ -113,34 +112,34 @@ const ProductCard = ({ product, showDetails = false }: { product: Product, showD
 const ProductsPage = () => {
   // Sample produktdata
   const products: Product[] = [
-    { 
-      id: '1', 
-      name: 'SimpleRouter Basic', 
-      price: 0, 
+    {
+      id: '1',
+      name: 'SimpleRouter Basic',
+      price: 0,
       description: 'Grundlæggende routing med minimal opsætning',
-      featured: false 
+      featured: false
     },
-    { 
-      id: '2', 
-      name: 'SimpleRouter Pro', 
-      price: 299, 
+    {
+      id: '2',
+      name: 'SimpleRouter Pro',
+      price: 299,
       description: 'Avancerede routing features til professionelle projekter',
-      featured: true 
+      featured: true
     },
-    { 
-      id: '3', 
-      name: 'SimpleRouter Enterprise', 
-      price: 999, 
+    {
+      id: '3',
+      name: 'SimpleRouter Enterprise',
+      price: 999,
       description: 'Komplet routing løsning med support og tilpasninger',
-      featured: false 
+      featured: false
     },
   ];
-  
+
   return (
     <div>
       <h1>Produkter</h1>
       <p>Udforsk vores udvalg af routing løsninger:</p>
-      
+
       <div style={{ marginTop: '2rem' }}>
         {products.map(product => (
           <ProductCard key={product.id} product={product} />
@@ -153,34 +152,34 @@ const ProductsPage = () => {
 const ProductDetailPage = () => {
   // Brug useParams til at få id
   const { id } = useParams();
-  
+
   // Sample produktdata
   const products: Product[] = [
-    { 
-      id: '1', 
-      name: 'SimpleRouter Basic', 
-      price: 0, 
+    {
+      id: '1',
+      name: 'SimpleRouter Basic',
+      price: 0,
       description: 'Grundlæggende routing med minimal opsætning. Perfekt til mindre projekter og prototyper. Inkluderer de mest nødvendige routing features.',
-      featured: false 
+      featured: false
     },
-    { 
-      id: '2', 
-      name: 'SimpleRouter Pro', 
-      price: 299, 
+    {
+      id: '2',
+      name: 'SimpleRouter Pro',
+      price: 299,
       description: 'Avancerede routing features til professionelle projekter. Inkluderer route guards, nested routes, og avanceret matching.',
-      featured: true 
+      featured: true
     },
-    { 
-      id: '3', 
-      name: 'SimpleRouter Enterprise', 
-      price: 999, 
+    {
+      id: '3',
+      name: 'SimpleRouter Enterprise',
+      price: 999,
       description: 'Komplet routing løsning med support og tilpasninger. Prioriteret support, on-demand tilpasninger, og enterprise-grade ydeevne.',
-      featured: false 
+      featured: false
     },
   ];
-  
+
   const product = products.find(p => p.id === id);
-  
+
   if (!product) {
     return (
       <div>
@@ -190,12 +189,12 @@ const ProductDetailPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <h1>Produktdetaljer</h1>
       <ProductCard product={product} showDetails={true} />
-      
+
       <div style={{ marginTop: '2rem' }}>
         <h2>Tekniske specifikationer</h2>
         <ul>
@@ -214,7 +213,7 @@ const ContactPage = () => {
   return (
     <div>
       <h1>Kontakt os</h1>
-      
+
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <form style={{ display: 'grid', gap: '1rem' }} onSubmit={(e) => { e.preventDefault(); alert('Formularen er sendt (demo)'); }}>
           <div>
@@ -225,7 +224,7 @@ const ContactPage = () => {
               style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
             />
           </div>
-          
+
           <div>
             <label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}>E-mail</label>
             <input
@@ -234,7 +233,7 @@ const ContactPage = () => {
               style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
             />
           </div>
-          
+
           <div>
             <label htmlFor="message" style={{ display: 'block', marginBottom: '0.5rem' }}>Besked</label>
             <textarea
@@ -243,7 +242,7 @@ const ContactPage = () => {
               style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
             ></textarea>
           </div>
-          
+
           <button type="submit" style={{ justifySelf: 'start' }}>Send besked</button>
         </form>
       </div>
@@ -257,8 +256,8 @@ const NotFoundPage = () => {
       <h1 style={{ fontSize: '4rem', margin: '2rem 0', color: '#ff6b6b' }}>404</h1>
       <h2>Side ikke fundet</h2>
       <p>Beklager, vi kunne ikke finde den side, du leder efter.</p>
-      <Link 
-        to="/" 
+      <Link
+        to="/"
         style={{
           display: 'inline-block',
           padding: '0.5rem 1rem',
@@ -306,40 +305,51 @@ const App = () => {
           <h1 style={{ marginBottom: '0.5rem' }}>SimpleRouter Demo</h1>
           <Navigation />
         </header>
-        
+
         <main>
           <Switch>
             {/* Base routes */}
             <Route path="/" exact>
               <HomePage />
             </Route>
-            
+
             <Route path="/about">
               <AboutPage />
             </Route>
-            
-            {/* Product routes */}
-            <RouteGroup prefix="/products">
-              <Route path="/" exact>
-                <ProductsPage />
-              </Route>
-              
-              <Route path="/:id">
-                <ProductDetailPage />
-              </Route>
-            </RouteGroup>
-            
+
+            {/* Product routes - direkte ruter uden RouteGroup for at eliminere potentielle problemer */}
+            <Route path="/products" exact>
+              <ProductsPage />
+            </Route>
+
+            <Route path="/products/:id">
+              <ProductDetailPage />
+            </Route>
+
+            {/* Alternativt med RouteGroup hvis du stadig ønsker at bruge den */}
+            {/*
+    <RouteGroup prefix="/products">
+      <Route path="/" exact>
+        <ProductsPage />
+      </Route>
+      
+      <Route path="/:id">
+        <ProductDetailPage />
+      </Route>
+    </RouteGroup>
+    */}
+
             <Route path="/contact">
               <ContactPage />
             </Route>
-            
+
             {/* Catch-all 404 route */}
             <Route path="*">
               <NotFoundPage />
             </Route>
           </Switch>
         </main>
-        
+
         <footer style={{ marginTop: '3rem', paddingTop: '1rem', borderTop: '1px solid #ddd' }}>
           <p>&copy; 2025 SimpleRouter Demo. Alle rettigheder forbeholdes.</p>
         </footer>
