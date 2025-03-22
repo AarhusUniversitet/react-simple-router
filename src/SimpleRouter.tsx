@@ -68,15 +68,19 @@ export interface OutletContextType {
 // Context Creation
 // ==============================
 
-// Router Context med default værdier
-const RouterContext = createContext<RouterContextType>({
-  currentPath: '/',
-  navigate: () => console.warn('RouterProvider ikke fundet'),
-  isActive: () => false
-});
+// Symbol der bruges til at detektere når useRouter kaldes uden for en RouterProvider
+const PROVIDER_NOT_FOUND = Symbol('PROVIDER_NOT_FOUND');
+
+// Router Context med sentinel værdi istedet for default værdi
+const RouterContext = createContext<RouterContextType | typeof PROVIDER_NOT_FOUND>(PROVIDER_NOT_FOUND);
 
 // Navngiv context for bedre debugging
 RouterContext.displayName = 'RouterContext';
+
+// Type guard til at kontrollere om en værdi er en gyldig RouterContextType
+function isRouterContext(value: RouterContextType | typeof PROVIDER_NOT_FOUND): value is RouterContextType {
+  return value !== PROVIDER_NOT_FOUND;
+}
 
 // Outlet Context til nested routes
 const OutletContext = createContext<OutletContextType>({
@@ -208,7 +212,15 @@ export function RouterProvider({
  * useRouter - Hook til at få adgang til routing funktioner
  */
 export function useRouter(): RouterContextType {
-  return useContext(RouterContext);
+  const context = useContext(RouterContext);
+  
+  // Tjek om context er vores sentinel værdi, hvilket indikerer at hooket
+  // er brugt uden for en RouterProvider
+  if (!isRouterContext(context)) {
+    throw new Error('useRouter skal bruges inden for en RouterProvider');
+  }
+  
+  return context;
 }
 
 /**
@@ -219,8 +231,8 @@ export function Route({
   exact = false,
   children 
 }: RouteProps): ReactElement | null {
-  // Brug use() hook i stedet for useContext for fleksibilitet
-  const { currentPath } = use(RouterContext);
+  // Brug useRouter i stedet for direkte use() for at få fejlhåndtering
+  const { currentPath } = useRouter();
   
   // Match stien
   const { match, params } = matchPath(path, currentPath, exact);
@@ -283,8 +295,8 @@ export function Link({
   exact = false,
   ...restProps
 }: LinkProps & Record<string, any>): ReactElement {
-  // Brug use() hook i stedet for useContext
-  const { navigate, isActive } = use(RouterContext);
+  // Brug useRouter for at få fejlhåndtering
+  const { navigate, isActive } = useRouter();
   
   const isLinkActive = isActive(to, exact);
   
@@ -374,7 +386,8 @@ export function Switch({ children }: SwitchProps): ReactElement | null {
  * NotFound - Vises kun når ingen andre ruter matcher
  */
 export function NotFound({ children }: NotFoundProps): ReactElement | null {
-  const { currentPath } = use(RouterContext);
+  // Brug useRouter i stedet for use() for fejlhåndtering
+  const { currentPath } = useRouter();
   
   // Denne skal have en metode til at registrere alle tilgængelige routes
   // Dette er bare en simpel placeholder

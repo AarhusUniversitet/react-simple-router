@@ -23,9 +23,5 @@ module.exports = {
   },
   // Nødvendigt for ES Modules support
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
+  globals: {},
 };
