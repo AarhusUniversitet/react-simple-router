@@ -6,26 +6,49 @@ import path from 'path';
 export default defineConfig({
   plugins: [
     react({
-      // Include react refresh for hot module reloading
+      // Forenklet Babel konfiguration der sikrer korrekt ESM-håndtering
       babel: {
-        plugins: [
-          // Tilpasninger til React 19 hvis nødvendigt
+        presets: [
+          '@babel/preset-typescript',
+          ['@babel/preset-react', {
+            runtime: 'automatic' // React 19 JSX Transform
+          }]
         ],
-      },
+        // Ingen @babel/preset-env her, da Vite håndterer dette selv
+        babelrc: false,
+        configFile: false
+      }
     }),
   ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    },
+    }
   },
-  server: {
-    port: 3000,
-    open: true,
-    host: true, // Lytter på alle netværksinterfaces
-  },
+  // Forbedret build options
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      // Sikrer at alle React-relaterede imports håndteres korrekt
+      external: [],
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom']
+        }
+      }
+    }
   },
+  // Simpel server-konfiguration
+  server: {
+    port: 3000,
+    open: true,
+    host: true
+  },
+  // Eksplicit specificer, at vi bruger ESM moduler
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'es2020'
+    }
+  }
 });
