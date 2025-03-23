@@ -29,6 +29,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Fjern console.log i prod
+      },
+    },    
     rollupOptions: {
       // Sikrer at alle React-relaterede imports håndteres korrekt
       external: [],
@@ -37,7 +43,7 @@ export default defineConfig({
           'vendor': ['react', 'react-dom']
         }
       }
-    }
+    },
   },
   // Simpel server-konfiguration
   server: {
