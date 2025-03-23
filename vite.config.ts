@@ -29,12 +29,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Fjern console.log i prod
-      },
-    },    
+    minify: 'esbuild',
+    target: 'es2020',
     rollupOptions: {
       // Sikrer at alle React-relaterede imports håndteres korrekt
       external: [],
