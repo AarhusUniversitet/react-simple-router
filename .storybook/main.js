@@ -1,4 +1,4 @@
-/** @type {import('@storybook/react-webpack5').StorybookConfig} */
+/** @type {import('@storybook/react-vite').StorybookConfig} */
 const config = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   addons: [
@@ -6,22 +6,16 @@ const config = {
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
     "@storybook/addon-a11y",
-    "@storybook/addon-webpack5-compiler-babel",
-    "@chromatic-com/storybook"
   ],
   framework: {
-    name: "@storybook/react-webpack5",
+    name: "@storybook/react-vite", // Brug react-vite i stedet for react-webpack5
     options: {},
   },
-  docs: {},
-  // Storybook 8 bruger en lidt anderledes TypeScript-konfiguration
-  typescript: {
-    // Storybook 8 checker ikke typer som standard
-    check: false,
-    // Mere effektiv dokgenerering
-    reactDocgen: "react-docgen-typescript",
-  }
-  // Fjernet staticDirs konfiguration, da vi ikke har en public mappe
+  docs: {
+    autodocs: "tag",
+  },
+  // Der er ingen grund til at have Webpack-specifik konfiguration
+  // så vi kan fjerne webpackFinal, moduleNameMapper, osv.
 };
 
 export default config;
