@@ -1,8 +1,40 @@
 {
-  "name": "simple-react-router",
+  "name": "react-simple-router",
   "version": "1.0.0",
-  "description": "En simpel router implementation til React uden frameworks",
+  "description": "A simple router implementation for React without frameworks",
   "type": "module",
+  "author": "Thomas Riis Hansen",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "router",
+    "routing",
+    "typescript",
+    "simple"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AarhusUniversitet/react-simple-router"
+  },
+  "homepage": "https://github.com/AarhusUniversitet/react-simple-router#readme",
+  "bugs": {
+    "url": "https://github.com/AarhusUniversitet/react-simple-router/issues"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,7 +43,8 @@
     "test:watch": "jest --config jest.config.cjs --watch",
     "test:coverage": "jest --config jest.config.cjs --coverage",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "ts-build": "tsup"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -43,6 +76,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "storybook": "^8.6.7",
     "ts-jest": "^29.2.6",
+    "tsup": "^8.4.0",
     "typescript": "^5.8.2",
     "vite": "^5.1.4"
   },

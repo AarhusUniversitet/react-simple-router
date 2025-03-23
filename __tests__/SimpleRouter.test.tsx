@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { RouterProvider, useRouter, Route, Link, Switch, NotFound } from '../src/SimpleRouter';
+import { RouterProvider, useRouter, Route, Link, Switch } from '../src/SimpleRouter';
 
 // Mock historyAPI og window.location
 const mockHistoryPush = jest.fn();
@@ -18,7 +18,6 @@ const originalPushState = window.history.pushState;
 const HomePage = () => <div data-testid="home-page">Home Page</div>;
 const AboutPage = () => <div data-testid="about-page">About Page</div>;
 const UserPage = ({ id }: { id: string }) => <div data-testid="user-page">User {id}</div>;
-const NotFoundPage = () => <div data-testid="not-found-page">Not Found</div>;
 
 // Router Current Path Display Component (helper til tests)
 const CurrentPath = () => {

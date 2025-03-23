@@ -8,7 +8,6 @@ import React, {
   useCallback,
   ReactNode,
   ReactElement,
-  use
 } from 'react';
 
 // ==============================
@@ -81,14 +80,6 @@ function isRouterContext(value: RouterContextType | typeof PROVIDER_NOT_FOUND): 
 const OutletContext = createContext<OutletContextType>({
   params: {}
 });
-
-// Type guard funktion til at tjekke om et element er en Route
-function isRouteElement(element: any): element is React.ReactElement<RouteProps> {
-  return (
-    React.isValidElement(element) &&
-    typeof (element.props as any).path === 'string'
-  );
-}
 
 // ==============================
 // Utility Functions

@@ -1,19 +1,24 @@
-// Export all components from SimpleRouter
+// Export alle komponenter fra SimpleRouter
 export {
   RouterProvider,
   useRouter,
   Route,
   Link,
+  NavLink,
   Switch,
-  NotFound
+  NotFound,
+  useParams,
+  Outlet
 } from './SimpleRouter';
 
-// Export types
+// Export interfaces/types
 export type {
   RouterContextType,
   RouterProviderProps,
   RouteProps,
   LinkProps,
+  NavLinkProps,
   SwitchProps,
-  NotFoundProps
-} from '../src/SimpleRouter';
+  NotFoundProps,
+  OutletContextType
+} from './SimpleRouter';

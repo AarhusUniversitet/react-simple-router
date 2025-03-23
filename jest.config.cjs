@@ -4,7 +4,12 @@ module.exports = {
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.test.json' // Brug den specifikke test tsconfig
+      }
+    ],
   },
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
