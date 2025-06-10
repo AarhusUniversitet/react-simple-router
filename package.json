@@ -1,6 +1,6 @@
 {
   "name": "@aarhus-university/react-simple-router",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A simple router implementation for React without frameworks",
   "type": "module",
   "author": "Thomas Riis Hansen",
